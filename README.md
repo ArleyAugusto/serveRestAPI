@@ -4,7 +4,7 @@ Este projeto contém uma coleção de testes automatizados para a API [Serverest
 
 ## 🔧 Ferramentas Utilizadas
 
-- **Postman** – Criação e execução dos testes de API.
+- **Postman Vers. WEB** – Criação e execução dos testes de API.
 - **Newman** – Execução dos testes via linha de comando.
 - **HTMLExtra Reporter** – Geração de relatórios personalizados em HTML.
 - **FakerAPI** – Geração dinâmica de massa de testes (e-mails e nomes aleatórios).
