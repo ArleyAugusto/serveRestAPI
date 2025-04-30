@@ -11,20 +11,23 @@ jobs:
     steps: 
       - uses: actions/checkout@v3
 
-      - name: Create dir for report 
-        run: 
-          mkdir testArtifacts
+      # Criar diretório para armazenar o relatório
+      - name: Create dir for reports
+        run: mkdir -p newman/reports
 
-      - name:  Install Newman
-        run: 
+      # Instalar Newman e o Reporter
+      - name: Install Newman
+        run: |
           npm install -g newman
           npm install -g newman-reporter-htmlextra
 
-      - name: Run Test
-        run: newman run ServeRest.postman_collection.json -e serveRest_env.postman_environment.json -r cli,htmlextra
+      # Rodar o Newman e gerar o relatório
+      - name: Run Tests with Newman
+        run: newman run ServeRest.postman_collection.json -e serveRest_env.postman_environment.json -r htmlextra --reporter-htmlextra-export newman/reports/report.html
 
-      - name: Report   
+      # Fazer upload do relatório gerado
+      - name: Upload Reports
         uses: actions/upload-artifact@v4
         with: 
-          name: Reports
-          path: newman
+          name: reports
+          path: newman/reports/report.html
