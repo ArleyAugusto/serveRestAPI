@@ -42,3 +42,8 @@ Este projeto contém uma coleção de testes automatizados para a API [Serverest
 
 - **Execução com CSV**  
   Código comentado incluído na coleção como exemplo de criação em massa
+
+##
+E-mail: arley.it@icloud.com
+LinkedIn: www.linkedin.com/in/arleyaugusto
+
