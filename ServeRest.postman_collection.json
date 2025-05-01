@@ -7,7 +7,7 @@
 	},
 	"item": [
 		{
-			"name": "Geração de massa",
+			"name": "Geração de massa - Usuário",
 			"item": [
 				{
 					"name": "Busca novo usuário",
@@ -70,6 +70,13 @@
 								"exec": [
 									"pm.globals.unset(\"schema\");\r",
 									"\r",
+									"/* Massa de testes CSV\r",
+									"\r",
+									"pm.globals.unset(\"userName\");\r",
+									"pm.globals.unset(\"email\");\r",
+									"pm.globals.unset(\"password\");\r",
+									"*/\r",
+									"\r",
 									"pm.globals.set(\"schema\", {\r",
 									"  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\r",
 									"  \"type\": \"object\",\r",
@@ -85,7 +92,17 @@
 									"    \"message\",\r",
 									"    \"_id\"\r",
 									"  ]\r",
-									"});"
+									"});\r",
+									"\r",
+									"/* Massa de testes CSV\r",
+									"\r",
+									"pm.globals.set(\"userName\", pm.iterationData.get('userName'))\r",
+									"pm.globals.set(\"email\", pm.iterationData.get('email'))\r",
+									"pm.globals.set(\"password\", pm.iterationData.get('password'))\r",
+									"\r",
+									"*/\r",
+									"\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -331,21 +348,31 @@
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "Login",
+			"item": [
 				{
-					"name": "Deletar usuário da base",
+					"name": "Realizar login",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code 200\", function () {\r",
+									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Validar exclusão de usuário\", function(){\r",
-									"    pm.expect(pm.response.json().message).to.eql(\"Registro excluído com sucesso\")\r",
-									"})"
+									"\r",
+									"\r",
+									"let fullToken = pm.response.json().authorization;\r",
+									"\r",
+									"let cleanToken = fullToken.replace(\"Bearer \", \"\");\r",
+									"    pm.environment.set(\"token\", cleanToken);\r",
+									"\r",
+									"console.log(\"Token salvo:\", cleanToken);"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -353,23 +380,11 @@
 						}
 					],
 					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text",
-								"disabled": true
-							}
-						],
+						"method": "POST",
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "",
+							"raw": "{\r\n    \"email\": \"{{email}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -377,13 +392,333 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseURL}}/usuarios/{{userId}}",
+							"raw": "{{baseURL}}/login",
 							"host": [
 								"{{baseURL}}"
 							],
 							"path": [
-								"usuarios",
-								"{{userId}}"
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Produtos",
+			"item": [
+				{
+					"name": "Buscar lista de produtos",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Validação de contrato Lista de Produtos\", function () {\r",
+									"    const schema = {\r",
+									"        \"type\": \"object\",\r",
+									"        \"required\": [\"quantidade\", \"produtos\"],\r",
+									"        \"properties\": {\r",
+									"            \"quantidade\": { \"type\": \"number\" },\r",
+									"            \"produtos\": {\r",
+									"                \"type\": \"array\",\r",
+									"                \"items\": {\r",
+									"                    \"type\": \"object\",\r",
+									"                    \"required\": [\"nome\", \"preco\", \"descricao\", \"quantidade\", \"_id\"],\r",
+									"                    \"properties\": {\r",
+									"                        \"nome\": { \"type\": \"string\" },\r",
+									"                        \"preco\": { \"type\": \"number\", \"minimum\": 0 },\r",
+									"                        \"descricao\": { \"type\": \"string\" },\r",
+									"                        \"quantidade\": { \"type\": \"number\", \"minimum\": 0 },\r",
+									"                        \"_id\": { \"type\": \"string\" }\r",
+									"                    }\r",
+									"                }\r",
+									"            }\r",
+									"        }\r",
+									"    };\r",
+									"\r",
+									"    pm.response.to.have.jsonSchema(schema);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/produtos",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"produtos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Massa de testes - Produtos",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Produto criado com sucesso\", function () {\r",
+									"    let produto = pm.response.json()[0];\r",
+									"\r",
+									"    // Armazenar o _id do produto\r",
+									"    pm.environment.set(\"produto_id\", produto._id);\r",
+									"\r",
+									"    // Armazenar outros dados para futuras validações\r",
+									"    pm.environment.set(\"nome_produto\", produto.nome);  \r",
+									"    pm.environment.set(\"preco_produto\", produto.preço);  \r",
+									"    pm.environment.set(\"descricao_produto\", produto.descrição);  \r",
+									"    pm.environment.set(\"quantidade_produto\", produto.quantidade); \r",
+									"\r",
+									"    console.log(\"Produto gerado:\", produto);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.mockaroo.com/api/607508f0?count=1&key=8aa88220",
+							"protocol": "https",
+							"host": [
+								"api",
+								"mockaroo",
+								"com"
+							],
+							"path": [
+								"api",
+								"607508f0"
+							],
+							"query": [
+								{
+									"key": "count",
+									"value": "1"
+								},
+								{
+									"key": "key",
+									"value": "8aa88220"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cadastrar produto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"\r",
+									"\r",
+									"pm.test(\"Status code 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Validar mensagem de cadastro bem sucedida\", function () {\r",
+									"    var responseData = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseData).to.have.property('_id');\r",
+									"    pm.expect(responseData).to.have.property('message');\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Capturar o ID gerado\", function () {\r",
+									"    pm.globals.set(\"product_Id\", pm.response.json()._id)\r",
+									"})\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"{{nome_produto}}\",\r\n  \"preco\": {{preco_produto}},\r\n  \"descricao\": \"{{descricao_produto}}\",\r\n  \"quantidade\": {{quantidade_produto}}\r\n}\r\n\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/produtos",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"produtos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar produto cadastrado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Capturar e exibir o ID do produto cadastrado\", function () {\r",
+									"    const id = pm.response.json()._id;\r",
+									"    pm.globals.set(\"produto_id\", id);\r",
+									"    console.log(\"ID do produto cadastrado:\", id);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/produtos/{{product_Id}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"produtos",
+								"{{product_Id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Excluir produto cadastrado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Produto excluído com sucesso\", function () {\r",
+									"    const response = pm.response.json();\r",
+									"    pm.expect(pm.response).to.have.status(200);\r",
+									"    \r",
+									"    pm.expect(response).to.have.property(\"message\");\r",
+									"    pm.expect(response.message).to.eql(\"Registro excluído com sucesso\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/produtos/{{product_Id}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"produtos",
+								"{{product_Id}}"
 							]
 						}
 					},
